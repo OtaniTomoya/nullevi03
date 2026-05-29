@@ -8,6 +8,7 @@ TOKEN="${TELEGRAM_BOT_TOKEN:-}"
 usage() {
   cat <<'EOF'
 Usage:
+  scripts/configure-telegram.sh '<BotFather token>'
   TELEGRAM_BOT_TOKEN=<BotFather token> scripts/configure-telegram.sh
   scripts/configure-telegram.sh --check
   scripts/configure-telegram.sh --clear
@@ -59,7 +60,7 @@ write_token() {
   token="$1"
 
   if [ -z "$token" ]; then
-    echo "Set TELEGRAM_BOT_TOKEN before running this script." >&2
+    echo "Pass the BotFather token as an argument or set TELEGRAM_BOT_TOKEN." >&2
     usage >&2
     exit 2
   fi
@@ -115,7 +116,11 @@ case "${1:-}" in
     write_token "$TOKEN"
     ;;
   *)
-    usage >&2
-    exit 2
+    if [ $# -eq 1 ]; then
+      write_token "$1"
+    else
+      usage >&2
+      exit 2
+    fi
     ;;
 esac

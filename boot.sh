@@ -12,6 +12,7 @@ CLAUDE_CHANNELS="${CLAUDE_CHANNELS:-plugin:telegram@claude-plugins-official}"
 CLAUDE_RESTART_DELAY="${CLAUDE_RESTART_DELAY:-5}"
 CLAUDE_BYPASS_PERMISSIONS="${CLAUDE_BYPASS_PERMISSIONS:-1}"
 CLAUDE_SESSION_NAME="${CLAUDE_SESSION_NAME:-nullevi03}"
+CLAUDE_CONTINUE="${CLAUDE_CONTINUE:-0}"
 TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
 TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID:-}"
 
@@ -30,6 +31,7 @@ Environment:
   CLAUDE_CHANNELS           Claude Code channel spec. Default: plugin:telegram@claude-plugins-official
   CLAUDE_RESTART_DELAY      Seconds to wait before restarting Claude. Default: 5
   CLAUDE_BYPASS_PERMISSIONS Set to 0 to avoid --dangerously-skip-permissions. Default: 1
+  CLAUDE_CONTINUE           Set to 1 to pass -c/--continue. Default: 0
   CLAUDE_SESSION_ID         Optional Claude session UUID to resume instead of the latest session.
   CLAUDE_MODEL              Optional Claude model alias/name.
   CLAUDE_EFFORT             Optional effort level.
@@ -88,7 +90,7 @@ check_setup() {
   fi
 
   if [ -z "$TELEGRAM_BOT_TOKEN" ] && [ ! -f "$HOME/.claude/channels/telegram/.env" ]; then
-    log "WARN: Telegram token is not configured. Run /telegram:configure <token> in Claude Code or TELEGRAM_BOT_TOKEN=<token> scripts/configure-telegram.sh."
+    log "WARN: Telegram token is not configured. Run /telegram:configure <token> in Claude Code or scripts/configure-telegram.sh '<token>'."
   else
     log "OK: Telegram token source found"
   fi
@@ -117,7 +119,7 @@ run_claude() {
 
   if [ -n "${CLAUDE_SESSION_ID:-}" ]; then
     set -- "$@" --resume "$CLAUDE_SESSION_ID"
-  else
+  elif [ "$CLAUDE_CONTINUE" = "1" ]; then
     set -- "$@" -c
   fi
 
