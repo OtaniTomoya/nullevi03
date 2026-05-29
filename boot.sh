@@ -88,7 +88,7 @@ check_setup() {
   fi
 
   if [ -z "$TELEGRAM_BOT_TOKEN" ] && [ ! -f "$HOME/.claude/channels/telegram/.env" ]; then
-    log "WARN: Telegram token is not configured. Run /telegram:configure <token> in Claude Code or create .env from .env.example."
+    log "WARN: Telegram token is not configured. Run /telegram:configure <token> in Claude Code or TELEGRAM_BOT_TOKEN=<token> scripts/configure-telegram.sh."
   else
     log "OK: Telegram token source found"
   fi

@@ -39,6 +39,13 @@ claude setup-token
 /reload-plugins
 ```
 
+CLI だけで保存する場合は、repo ではなく Claude Code の channel state に token を書きます。
+
+```sh
+TELEGRAM_BOT_TOKEN=<BotFather token> scripts/configure-telegram.sh
+scripts/configure-telegram.sh --check
+```
+
 4. いったん終了して、この repo から channel 付きで起動します。
 
 ```sh
