@@ -42,7 +42,7 @@ claude setup-token
 CLI だけで保存する場合は、repo ではなく Claude Code の channel state に token を書きます。
 
 ```sh
-scripts/configure-telegram.sh '<BotFather token>'
+scripts/configure-telegram.sh
 scripts/configure-telegram.sh --check
 ```
 
@@ -106,6 +106,7 @@ tail -f ~/Library/Logs/nullevi03/err.log
 | `CLAUDE_RESTART_DELAY` | Claude 終了後に再起動するまでの秒数 | `5` |
 | `CLAUDE_BYPASS_PERMISSIONS` | `--dangerously-skip-permissions` を付けるか | `1` |
 | `CLAUDE_CONTINUE` | `-c` で最新会話を継続するか。初回は `0` のまま起動する | `0` |
+| `REQUIRE_TELEGRAM_TOKEN` | Telegram token 未設定時に起動を止めるか | `1` |
 | `CLAUDE_SESSION_ID` | 固定 session を resume する場合の UUID | なし |
 | `CLAUDE_MODEL` | `sonnet` などの model 指定 | なし |
 | `CLAUDE_EFFORT` | `low`, `medium`, `high` など | なし |

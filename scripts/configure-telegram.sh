@@ -8,6 +8,7 @@ TOKEN="${TELEGRAM_BOT_TOKEN:-}"
 usage() {
   cat <<'EOF'
 Usage:
+  scripts/configure-telegram.sh
   scripts/configure-telegram.sh '<BotFather token>'
   TELEGRAM_BOT_TOKEN=<BotFather token> scripts/configure-telegram.sh
   scripts/configure-telegram.sh --check
@@ -24,6 +25,27 @@ read_token_from_file() {
   fi
 
   sed -n 's/^TELEGRAM_BOT_TOKEN=//p' "$ENV_FILE" | tail -n 1
+}
+
+prompt_for_token() {
+  if [ ! -t 0 ]; then
+    echo "Pass the BotFather token as an argument or set TELEGRAM_BOT_TOKEN." >&2
+    usage >&2
+    exit 2
+  fi
+
+  printf 'Paste BotFather token: ' >&2
+  old_stty=$(stty -g 2>/dev/null || true)
+  if [ -n "$old_stty" ]; then
+    stty -echo
+  fi
+  IFS= read -r token
+  if [ -n "$old_stty" ]; then
+    stty "$old_stty"
+    printf '\n' >&2
+  fi
+
+  printf '%s\n' "$token"
 }
 
 validate_token() {
@@ -65,6 +87,8 @@ write_token() {
     exit 2
   fi
 
+  validate_token "$token"
+
   mkdir -p "$STATE_DIR"
 
   tmp="${ENV_FILE}.$$"
@@ -78,7 +102,6 @@ write_token() {
   mv "$tmp" "$ENV_FILE"
   chmod 600 "$ENV_FILE"
 
-  validate_token "$token"
   echo "Wrote ${ENV_FILE}"
   echo "Restart Claude Code or run /reload-plugins before pairing."
 }
@@ -113,7 +136,12 @@ case "${1:-}" in
     usage
     ;;
   "")
-    write_token "$TOKEN"
+    if [ -n "$TOKEN" ]; then
+      write_token "$TOKEN"
+    else
+      prompted_token=$(prompt_for_token) || exit $?
+      write_token "$prompted_token"
+    fi
     ;;
   *)
     if [ $# -eq 1 ]; then
