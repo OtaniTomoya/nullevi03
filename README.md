@@ -52,6 +52,12 @@ BotFather のメッセージ全文をコピーした場合は、複数行 paste 
 scripts/configure-telegram.sh --clipboard
 ```
 
+コピー前に待機させる場合:
+
+```sh
+scripts/configure-telegram.sh --wait-clipboard
+```
+
 4. いったん終了して、この repo から channel 付きで起動します。
 
 ```sh

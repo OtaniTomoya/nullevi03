@@ -11,6 +11,7 @@ Usage:
   scripts/configure-telegram.sh
   scripts/configure-telegram.sh '<BotFather token>'
   scripts/configure-telegram.sh --clipboard
+  scripts/configure-telegram.sh --wait-clipboard
   TELEGRAM_BOT_TOKEN=<BotFather token> scripts/configure-telegram.sh
   scripts/configure-telegram.sh --check
   scripts/configure-telegram.sh --clear
@@ -18,6 +19,7 @@ Usage:
 Writes the Telegram bot token to ~/.claude/channels/telegram/.env with mode 600.
 This is the same token file used by the official Telegram channel plugin.
 Use --clipboard when you copied BotFather's whole multi-line message.
+Use --wait-clipboard, then copy the BotFather token/message within 120 seconds.
 EOF
 }
 
@@ -80,6 +82,36 @@ read_clipboard() {
   fi
 
   pbpaste
+}
+
+wait_clipboard() {
+  if ! command -v pbpaste > /dev/null 2>&1; then
+    echo "pbpaste not found. Pass the BotFather token as an argument instead." >&2
+    exit 2
+  fi
+
+  echo "Waiting for BotFather token in clipboard. Copy the token or BotFather message now..." >&2
+  i=0
+  last=""
+  while [ "$i" -lt 120 ]; do
+    current=$(pbpaste || true)
+    token=$(normalize_token "$current")
+    if check_token_format "$token" > /dev/null 2>&1; then
+      printf '%s\n' "$token"
+      return 0
+    fi
+
+    if [ "$current" != "$last" ]; then
+      echo "Clipboard changed, but no Telegram bot token was found yet." >&2
+      last="$current"
+    fi
+
+    i=$((i + 1))
+    sleep 1
+  done
+
+  echo "Timed out waiting for a Telegram bot token in clipboard." >&2
+  return 1
 }
 
 validate_token() {
@@ -171,7 +203,16 @@ case "${1:-}" in
     validate_token "$(read_token_from_file || true)"
     ;;
   --clipboard)
-    write_token "$(read_clipboard)"
+    clipboard=$(read_clipboard)
+    token=$(normalize_token "$clipboard")
+    if ! check_token_format "$token" 2>/dev/null; then
+      echo "No Telegram bot token was found in the clipboard. Copy the BotFather token/message and retry, or run scripts/configure-telegram.sh --wait-clipboard." >&2
+      exit 1
+    fi
+    write_token "$token"
+    ;;
+  --wait-clipboard)
+    write_token "$(wait_clipboard)"
     ;;
   --clear)
     clear_token

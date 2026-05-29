@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Claude Code が CLI として導入され、subscription/OAuth 認証済みであること。
 - 長時間の常駐では `claude setup-token` を実行しておくこと。
 - `telegram@claude-plugins-official` が local scope で install 済みであること。
-- Bot 作成は BotFather で行う。token は `/telegram:configure <token>`、`scripts/configure-telegram.sh`、または BotFather のメッセージ全文をコピーした状態で `scripts/configure-telegram.sh --clipboard` により `~/.claude/channels/telegram/.env` に保存するのが基本。
+- Bot 作成は BotFather で行う。token は `/telegram:configure <token>`、`scripts/configure-telegram.sh`、BotFather のメッセージ全文をコピーした状態で `scripts/configure-telegram.sh --clipboard`、または `scripts/configure-telegram.sh --wait-clipboard` により `~/.claude/channels/telegram/.env` に保存するのが基本。
 - 起動通知を使う場合のみ、環境変数または `.env` で `TELEGRAM_BOT_TOKEN` と `TELEGRAM_CHAT_ID` を渡す。
 
 ## 編集時の注意
