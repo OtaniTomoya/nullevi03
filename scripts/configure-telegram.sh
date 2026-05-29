@@ -27,6 +27,29 @@ read_token_from_file() {
   sed -n 's/^TELEGRAM_BOT_TOKEN=//p' "$ENV_FILE" | tail -n 1
 }
 
+normalize_token() {
+  raw="$1"
+
+  token=$(printf '%s\n' "$raw" | tr -d '\r' | grep -Eo '[0-9]{6,}:[A-Za-z0-9_-]{20,}' | head -n 1 || true)
+  if [ -n "$token" ]; then
+    printf '%s\n' "$token"
+    return 0
+  fi
+
+  printf '%s\n' "$raw" | tr -d '[:space:]'
+}
+
+check_token_format() {
+  token="$1"
+
+  if printf '%s\n' "$token" | grep -Eq '^[0-9]{6,}:[A-Za-z0-9_-]{20,}$'; then
+    return 0
+  fi
+
+  echo "Telegram token format is invalid. Paste the BotFather token like 123456789:AA... without extra spaces." >&2
+  return 1
+}
+
 prompt_for_token() {
   if [ ! -t 0 ]; then
     echo "Pass the BotFather token as an argument or set TELEGRAM_BOT_TOKEN." >&2
@@ -49,12 +72,14 @@ prompt_for_token() {
 }
 
 validate_token() {
-  token="$1"
+  token=$(normalize_token "$1")
 
   if [ -z "$token" ]; then
     echo "Telegram token is not configured" >&2
     return 1
   fi
+
+  check_token_format "$token" || return 1
 
   if ! command -v curl > /dev/null 2>&1; then
     echo "curl not found" >&2
@@ -72,14 +97,19 @@ validate_token() {
       fi
       ;;
     *)
-      echo "Telegram token validation failed" >&2
+      description=$(printf '%s\n' "$response" | sed -n 's/.*"description":"\([^"]*\)".*/\1/p')
+      if [ -n "$description" ]; then
+        echo "Telegram token validation failed: ${description}" >&2
+      else
+        echo "Telegram token validation failed" >&2
+      fi
       return 1
       ;;
   esac
 }
 
 write_token() {
-  token="$1"
+  token=$(normalize_token "$1")
 
   if [ -z "$token" ]; then
     echo "Pass the BotFather token as an argument or set TELEGRAM_BOT_TOKEN." >&2
