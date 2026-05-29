@@ -10,12 +10,14 @@ usage() {
 Usage:
   scripts/configure-telegram.sh
   scripts/configure-telegram.sh '<BotFather token>'
+  scripts/configure-telegram.sh --clipboard
   TELEGRAM_BOT_TOKEN=<BotFather token> scripts/configure-telegram.sh
   scripts/configure-telegram.sh --check
   scripts/configure-telegram.sh --clear
 
 Writes the Telegram bot token to ~/.claude/channels/telegram/.env with mode 600.
 This is the same token file used by the official Telegram channel plugin.
+Use --clipboard when you copied BotFather's whole multi-line message.
 EOF
 }
 
@@ -57,7 +59,7 @@ prompt_for_token() {
     exit 2
   fi
 
-  printf 'Paste BotFather token: ' >&2
+  printf 'Paste BotFather token on one line, or press Ctrl-C and use --clipboard for BotFather message text: ' >&2
   old_stty=$(stty -g 2>/dev/null || true)
   if [ -n "$old_stty" ]; then
     stty -echo
@@ -69,6 +71,15 @@ prompt_for_token() {
   fi
 
   printf '%s\n' "$token"
+}
+
+read_clipboard() {
+  if ! command -v pbpaste > /dev/null 2>&1; then
+    echo "pbpaste not found. Pass the BotFather token as an argument instead." >&2
+    exit 2
+  fi
+
+  pbpaste
 }
 
 validate_token() {
@@ -158,6 +169,9 @@ clear_token() {
 case "${1:-}" in
   --check)
     validate_token "$(read_token_from_file || true)"
+    ;;
+  --clipboard)
+    write_token "$(read_clipboard)"
     ;;
   --clear)
     clear_token

@@ -46,6 +46,12 @@ scripts/configure-telegram.sh
 scripts/configure-telegram.sh --check
 ```
 
+BotFather のメッセージ全文をコピーした場合は、複数行 paste ではなく clipboard mode を使います。
+
+```sh
+scripts/configure-telegram.sh --clipboard
+```
+
 4. いったん終了して、この repo から channel 付きで起動します。
 
 ```sh
